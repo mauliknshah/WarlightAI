@@ -11,6 +11,7 @@
 package bot;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import main.Map;
 import main.Region;
@@ -114,21 +115,60 @@ public class BotState {
 	}
 	
 	//regions from wich a player is able to pick his preferred starting regions
+        
+        //Changed by Maulik Shah
+        //28 Apr 2017.
 	public void setPickableStartingRegions(String[] mapInput)
 	{
+                //List: Ratio of (Sum of Armies) to Reward Army in a super region.        
+                ArrayList<Double> armyToRewardRatio =new ArrayList<Double>(6);
+                //List: Least AtoR ratio regions.
+                ArrayList<Integer> selectedRegionId =new ArrayList<Integer>(6);
 		for(int i=2; i<mapInput.length; i++)
 		{
 			int regionId;
+                        int totalArmy = 0;
+                        double aTorRatio = 0;
 			try {
+                                
+                                //Get the Region.
 				regionId = Integer.parseInt(mapInput[i]);
-				Region pickableRegion = fullMap.getRegion(regionId);
-				pickableStartingRegions.add(pickableRegion);
-			}
-			catch(Exception e) {
+				SuperRegion currentRegSR = fullMap.getRegion(regionId).getSuperRegion();
+                                 
+                                //Sum all the armies in the region.
+                                for(Region reg: currentRegSR.getSubRegions()){
+                                    totalArmy += reg.getArmies();
+                                }
+                               
+                                //Find the aTorRatio
+                                aTorRatio = totalArmy/currentRegSR.getArmiesReward();
+                                
+                                //If the size of the array list is less than 6
+                                //Then add the region into the list.
+                                if(armyToRewardRatio.size() < 6){
+                                    armyToRewardRatio.add(aTorRatio);
+                                    selectedRegionId.add(regionId);
+                                }else if(Collections.max(armyToRewardRatio) > aTorRatio ){ //If the current ratio is less than some element of array then.
+                                    int index = armyToRewardRatio.indexOf(Collections.max(armyToRewardRatio));
+                                    armyToRewardRatio.set(index, aTorRatio);
+                                    selectedRegionId.set(index, regionId);
+                                }else{
+                                    //Do nothing.
+                                }//end if-else if-else.
+			}catch(Exception e) {
 				System.err.println("Unable to parse pickable regions " + e.getMessage());
 			}
 		}
-	}
+                //Add the selected regions in the list. 
+                for(int i= 0 ; i < 6 ; i++){
+                    int index = armyToRewardRatio.indexOf(Collections.max(armyToRewardRatio));
+                    //Add the region with the least aTor ratio in the list.
+                    pickableStartingRegions.add(fullMap.getRegion(selectedRegionId.get(index)));
+                    //Remove both the items.
+                    armyToRewardRatio.remove(index);
+                    selectedRegionId.remove(index);
+                }//end for.
+	}//end method.
 	
 	//visible regions are given to the bot with player and armies info
 	public void updateMap(String[] mapInput)
