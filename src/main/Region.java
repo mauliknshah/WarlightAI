@@ -21,13 +21,15 @@ public class Region {
 	private int armies;
 	private String playerName;
 	
-	public Region(int id, SuperRegion superRegion)
+        //Changed by Maulik Shah
+        //28 APR.
+	public Region(int id, SuperRegion superRegion, int armies)
 	{
 		this.id = id;
 		this.superRegion = superRegion;
 		this.neighbors = new LinkedList<Region>();
 		this.playerName = "unknown";
-		this.armies = 0;
+		this.armies = armies;
 		
 		superRegion.addSubRegion(this);
 	}

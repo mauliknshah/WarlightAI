@@ -58,9 +58,11 @@ public class BotState {
 	}
 	
 	//initial map is given to the bot with all the information except for player and armies info
+        //Changed by Maulik Shah
+        //28Apr 2017.
 	public void setupMap(String[] mapInput)
 	{
-		int i, regionId, superRegionId, reward;
+		int i, regionId, superRegionId, reward,army;
 		
 		if(mapInput[1].equals("super_regions"))
 		{
@@ -84,9 +86,11 @@ public class BotState {
 				try {
 					regionId = Integer.parseInt(mapInput[i]);
 					i++;
+                                        army = Integer.parseInt(mapInput[i]);
 					superRegionId = Integer.parseInt(mapInput[i]);
 					SuperRegion superRegion = fullMap.getSuperRegion(superRegionId);
-					fullMap.add(new Region(regionId, superRegion));
+                                        //Changed by Maulik Shah.
+					fullMap.add(new Region(regionId, superRegion,army));
 				}
 				catch(Exception e) {
 					System.err.println("Unable to parse Regions " + e.getMessage());
@@ -120,7 +124,7 @@ public class BotState {
         //28 Apr 2017.
 	public void setPickableStartingRegions(String[] mapInput)
 	{
-                //List: Ratio of (Sum of Armies) to Reward Army in a super region.        
+                //List: Ratio of (Sum of Armies * Num of regions) to Reward Army in a super region.        
                 ArrayList<Double> armyToRewardRatio =new ArrayList<Double>(6);
                 //List: Least AtoR ratio regions.
                 ArrayList<Integer> selectedRegionId =new ArrayList<Integer>(6);
@@ -138,10 +142,18 @@ public class BotState {
                                 //Sum all the armies in the region.
                                 for(Region reg: currentRegSR.getSubRegions()){
                                     totalArmy += reg.getArmies();
+//                                    System.out.println("Armies:" + reg.getArmies());
                                 }
+                                
+                                
                                
                                 //Find the aTorRatio
-                                aTorRatio = totalArmy/currentRegSR.getArmiesReward();
+                                aTorRatio = (totalArmy * currentRegSR.getSubRegions().size())/(currentRegSR.getArmiesReward());
+                                
+//                                System.out.println("Region: " + regionId + "Total Army:" + totalArmy 
+//                                        + " SuperRegion Ratio: " + aTorRatio 
+//                                        + " No. of Reg." + currentRegSR.getSubRegions().size() 
+//                                        + " Army Reward:" + currentRegSR.getArmiesReward());
                                 
                                 //If the size of the array list is less than 6
                                 //Then add the region into the list.
@@ -160,8 +172,9 @@ public class BotState {
 			}
 		}
                 //Add the selected regions in the list. 
+                //Select the region with the least atoR ratio first.
                 for(int i= 0 ; i < 6 ; i++){
-                    int index = armyToRewardRatio.indexOf(Collections.max(armyToRewardRatio));
+                    int index = armyToRewardRatio.indexOf(Collections.min(armyToRewardRatio));
                     //Add the region with the least aTor ratio in the list.
                     pickableStartingRegions.add(fullMap.getRegion(selectedRegionId.get(index)));
                     //Remove both the items.
