@@ -1,1 +1,27 @@
-This branch is with the initial selection of the region using AtoR ratio.
+This branch contains the following things: 
+
+1. Initial selection of the states based on AtoR ratio.
+
+2. MDP for the Warlight problem. 
+
+Architecture : 
+
+S : A vector of the size of the regions in the map, where each position in the vector is the position assigned to the region and the value is the number of army deployed on that position.    e.g. [5, 3, 2,-5,……,0]
+Here, 0 is for ‘Fog regions’, positive value is the territory owned by player,  negative value is the territory owned by the opponent. 
+Fogg regions should only be considered for belief update. 
+
+
+A :  Set of actions in A’ (Set should be considered sequentially)
+Where, A’ = { Conquer, Transfer, Stand by(No Action)}
+
+T : Function of Attack , Transfer and Defense
+      Tij,attack := 60% winning probability move from one region(i) to another(j).
+      Tij,transfer := 100% for retaining the army from one region(i) to another(j).  
+      Ti,defense := 70% for retaining the army from in region i after being attacked.
+
+R : Fn( Number of regions, Army Strength, Army per each move,Army Position)
+   = (Army Strength - Armies not in bordering area) * (Number of Regions) * (Army per each move)
+
+OC :  Maximize the reward function over certain steps.
+ 
+
