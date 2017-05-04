@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import main.Region;
+import mdp.WarlightMDPExecution;
+import mdp.beans.*;
 import move.PlaceArmiesMove;
 import move.AttackTransferMove;
 
@@ -24,6 +26,8 @@ public class BotParser {
 	final Bot bot;
 	
 	BotState currentState;
+        
+        ArrayList<String> actionString; 
 	
 	public BotParser(Bot bot)
 	{
@@ -56,16 +60,46 @@ public class BotParser {
 				if(parts[1].equals("place_armies")) 
 				{
 					//place armies
-					ArrayList<PlaceArmiesMove> placeArmiesMoves = bot.getPlaceArmiesMoves(currentState, Long.valueOf(parts[2]));
-					for(PlaceArmiesMove move : placeArmiesMoves)
-						output = output.concat(move.getString() + ",");
+//					ArrayList<PlaceArmiesMove> placeArmiesMoves = bot.getPlaceArmiesMoves(currentState, Long.valueOf(parts[2]));
+//					for(PlaceArmiesMove move : placeArmiesMoves)
+                                    
+                                         this.actionString = WarlightMDPExecution.findOptimalActionSet(currentState,Long.valueOf(parts[2]));
+                                         
+//                                         for(String action:actionString){
+//                                             System.out.println("Action:" + action);
+//                                         }
+                                         
+                                         for(String action:actionString){
+                                             String actionParts[] = action.split("-");
+                                             //If the action is Deploy then.
+                                             try{
+                                                if(WarlightMDPSkeleton.DEPLOY == Integer.parseInt(actionParts[3])){
+                                                    output = output.concat(currentState.getMyPlayerName() + " place_armies " 
+                                                                                   + actionParts[0] + " " + actionParts[2]
+                                                                                   + ",");
+                                                }//end if.
+                                             }catch(Exception e){
+                                                 
+                                             }
+                                         }//end for.
+						
 				} 
 				else if(parts[1].equals("attack/transfer")) 
 				{
 					//attack/transfer
-					ArrayList<AttackTransferMove> attackTransferMoves = bot.getAttackTransferMoves(currentState, Long.valueOf(parts[2]));
-					for(AttackTransferMove move : attackTransferMoves)
-						output = output.concat(move.getString() + ",");
+//					ArrayList<AttackTransferMove> attackTransferMoves = bot.getAttackTransferMoves(currentState, Long.valueOf(parts[2]));
+//					for(AttackTransferMove move : attackTransferMoves)
+//						output = output.concat(move.getString() + ",");
+                                    for(String action:actionString){
+                                             String actionParts[] = action.split("-");
+                                        //If the action is Deploy then.
+                                        if(!actionParts[3].equals(WarlightMDPSkeleton.DEPLOY)){
+                                            output = output.concat(currentState.getMyPlayerName() + " attack/transfer " 
+                                                                                + actionParts[0] + " " + actionParts[1] 
+                                                                                + " " + actionParts[2]
+                                                                                + ",");
+                                        }//end if.
+                                    }//end for.
 				}
 				if(output.length() > 0)
 					System.out.println(output);

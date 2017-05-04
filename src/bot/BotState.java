@@ -12,6 +12,7 @@ package bot;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 
 import main.Map;
 import main.Region;
@@ -25,8 +26,9 @@ public class BotState {
 	
 	private String myName = "";
 	private String opponentName = "";
-	
-	private final Map fullMap = new Map(); //This map is known from the start, contains all the regions and how they are connected, doesn't change after initialization
+	//Updated by Maulik Shah
+        //Removed final from the fullMap.
+	private  Map fullMap = new Map(); //This map is known from the start, contains all the regions and how they are connected, doesn't change after initialization
 	private Map visibleMap; //This map represents everything the player can see, updated at the end of each round.
 	
 	private ArrayList<Region> pickableStartingRegions; //2 randomly chosen regions from each superregion are given, which the bot can chose to start with
@@ -43,6 +45,22 @@ public class BotState {
 		opponentMoves = new ArrayList<Move>();
 		roundNumber = 0;
 	}
+        
+        
+        //Added by Maulik Shah
+        //30 Apr.
+        //Constructor to create a new object given an existing object.
+        public BotState(BotState botState){
+            this.myName = "" + botState.myName;
+            this.opponentName = "" + botState.opponentName;
+            this.fullMap =  botState.fullMap.getMapCopy();
+            this.visibleMap = botState.visibleMap.getMapCopy();
+            this.pickableStartingRegions = (ArrayList<Region>)botState.pickableStartingRegions.clone();
+            this.opponentMoves = (ArrayList<Move>)botState.opponentMoves.clone();
+            this.startingArmies = botState.startingArmies;
+            this.roundNumber = botState.roundNumber;
+        }
+        
 	
 	public void updateSettings(String key, String value)
 	{
@@ -131,38 +149,31 @@ public class BotState {
 		for(int i=2; i<mapInput.length; i++)
 		{
 			int regionId;
-                        int totalArmy = 0;
-                        double aTorRatio = 0;
+                        double sTorRatio = 0;
 			try {
                                 
                                 //Get the Region.
 				regionId = Integer.parseInt(mapInput[i]);
 				SuperRegion currentRegSR = fullMap.getRegion(regionId).getSuperRegion();
                                  
-                                //Sum all the armies in the region.
-                                for(Region reg: currentRegSR.getSubRegions()){
-                                    totalArmy += reg.getArmies();
-//                                    System.out.println("Armies:" + reg.getArmies());
-                                }
                                 
-                                
-                               
                                 //Find the aTorRatio
-                                aTorRatio = (totalArmy * currentRegSR.getSubRegions().size())/(currentRegSR.getArmiesReward());
+                                sTorRatio = (currentRegSR.getSubRegions().size() * currentRegSR.getSubRegions().size())/(currentRegSR.getArmiesReward());
                                 
-//                                System.out.println("Region: " + regionId + "Total Army:" + totalArmy 
-//                                        + " SuperRegion Ratio: " + aTorRatio 
+//                                System.out.println("Region: " + regionId  
+//                                        + "Super Region Size : " + currentRegSR.getSubRegions().size()
+//                                        + " SuperRegion Ratio: " + sTorRatio 
 //                                        + " No. of Reg." + currentRegSR.getSubRegions().size() 
 //                                        + " Army Reward:" + currentRegSR.getArmiesReward());
                                 
                                 //If the size of the array list is less than 6
                                 //Then add the region into the list.
                                 if(armyToRewardRatio.size() < 6){
-                                    armyToRewardRatio.add(aTorRatio);
+                                    armyToRewardRatio.add(sTorRatio);
                                     selectedRegionId.add(regionId);
-                                }else if(Collections.max(armyToRewardRatio) > aTorRatio ){ //If the current ratio is less than some element of array then.
+                                }else if(Collections.max(armyToRewardRatio) > sTorRatio ){ //If the current ratio is less than some element of array then.
                                     int index = armyToRewardRatio.indexOf(Collections.max(armyToRewardRatio));
-                                    armyToRewardRatio.set(index, aTorRatio);
+                                    armyToRewardRatio.set(index, sTorRatio);
                                     selectedRegionId.set(index, regionId);
                                 }else{
                                     //Do nothing.
@@ -209,7 +220,17 @@ public class BotState {
 			if(region.getPlayerName().equals("unknown"))
 				unknownRegions.add(region);
 		for(Region unknownRegion : unknownRegions)
-			visibleMap.getRegions().remove(unknownRegion);				
+			visibleMap.getRegions().remove(unknownRegion);	
+                
+                //Remove unknown from the neighbourhood. 
+                //Updated by Maulik Shah.
+                for(Region region : visibleMap.regions){
+                    for(Region unknownRegion : unknownRegions){
+                        if(region.getNeighbors().contains(unknownRegion)){
+                            region.getNeighbors().remove(unknownRegion);
+                        }
+                    }
+                }
 	}
 
 	//Parses a list of the opponent's moves every round. 
