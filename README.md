@@ -6,4 +6,4 @@ Warlight is a specifically constrained game based on Risk, in which a player nee
 For more inststruction : [Warlight AI Challange Rules](http://theaigames.com/competitions/warlight-ai-challenge/rules)
 
 The architecture was designed to include POMDP and Bayesian Games, but due to 2-second respond time in the game, the development didn't go further. 
-The final presentation PDF gives a brief about the overall methodology: [Final Presentation](https://github.com/mauliknshah/WarlightAI/tree/master/ReadMe/Final Presentation.pdf)
+The final presentation PDF gives a brief about the overall methodology: [Final Presentation](https://github.com/mauliknshah/WarlightAI/tree/master/ReadMe/FinalPresentation.pdf)
